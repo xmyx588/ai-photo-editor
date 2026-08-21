@@ -44,13 +44,11 @@
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             cursor: pointer; transition: all 0.3s ease; border: 2px dashed #e0e0e0;
             overflow: hidden; position: relative;
-            max-width: 100%; max-height: 100%;
         }
         .image-preview:hover { border-color: #6366f1; }
-        .image-preview.has-image { border: none; cursor: default; }
+        .image-preview.has-image { border: none; cursor: default; width: auto; height: auto; max-width: 100%; max-height: 100%; }
         .image-preview img {
-            width: 100%; height: 100%;
-            object-fit: contain; display: block;
+            display: block; width: auto; height: auto; max-width: 100%; max-height: 100%;
         }
         .add-icon {
             width: 48px; height: 48px; border-radius: 50%;
@@ -345,30 +343,6 @@
             }
         }
 
-        function fitPreviewToImage(natW, natH) {
-            var wrapper = document.querySelector('.preview-wrapper');
-            var preview = document.getElementById('imagePreview');
-            var maxW = wrapper.clientWidth;
-            var maxH = wrapper.clientHeight;
-            var ratio = natW / natH;
-            var w, h;
-            if (ratio > maxW / maxH) {
-                w = maxW;
-                h = maxW / ratio;
-            } else {
-                h = maxH;
-                w = maxH * ratio;
-            }
-            preview.style.width = w + 'px';
-            preview.style.height = h + 'px';
-        }
-
-        function resetPreviewSize() {
-            var preview = document.getElementById('imagePreview');
-            preview.style.width = '';
-            preview.style.height = '';
-        }
-
         function showToast(message) {
             var toast = document.getElementById('toast');
             toast.textContent = message;
@@ -388,7 +362,6 @@
         function resetPreview() {
             selectedImage = null;
             generatedImageUrl = null;
-            resetPreviewSize();
             var preview = document.getElementById('imagePreview');
             preview.innerHTML = '';
             preview.classList.remove('has-image');
@@ -462,9 +435,6 @@
                     var img = document.createElement('img');
                     img.src = generatedImageUrl;
                     img.alt = '生成结果';
-                    img.onload = function() {
-                        fitPreviewToImage(img.naturalWidth, img.naturalHeight);
-                    };
                     preview.appendChild(img);
                     preview.classList.add('has-image');
                     document.getElementById('actionsOverlay').classList.add('active');
@@ -506,9 +476,6 @@
                         var img = document.createElement('img');
                         img.src = selectedImage;
                         img.alt = '预览图片';
-                        img.onload = function() {
-                            fitPreviewToImage(img.naturalWidth, img.naturalHeight);
-                        };
                         preview.appendChild(img);
                         preview.classList.add('has-image');
                         document.getElementById('actionsOverlay').classList.remove('active');
