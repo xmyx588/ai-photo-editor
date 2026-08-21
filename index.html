@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -7,761 +7,165 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="AI修图">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
     <title>AI 修图</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            height: 100vh; overflow: hidden; color: #333;
         }
-
-        .phone-container {
-            width: 100%;
-            max-width: 400px;
-            height: 90vh;
-            max-height: 800px;
-            background: #ffffff;
-            border-radius: 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+        .container {
+            height: 100vh; display: flex; flex-direction: column;
+            padding: 16px; max-width: 420px; margin: 0 auto;
         }
-
+        .header { text-align: center; margin-bottom: 12px; }
+        .header h1 { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+        .version-tag { font-size: 10px; color: #9ca3af; margin-top: 4px; }
+        .api-config { margin-bottom: 12px; }
+        .api-config input {
+            width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0;
+            border-radius: 10px; font-size: 13px; background: white;
+            transition: all 0.2s ease;
+        }
+        .api-config input:focus {
+            outline: none; border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .api-config input::placeholder { color: #bbb; }
         .image-preview {
-            flex: 1;
-            min-height: 0;
-            background: #f8f9fb;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px dashed #e0e4e8;
-            position: relative;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            width: 100%;
+            flex: 1; min-height: 0; background: white; border-radius: 16px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin-bottom: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            cursor: pointer; transition: all 0.3s ease; border: 2px dashed #e0e0e0;
+            overflow: hidden; position: relative;
         }
-
         .image-preview:hover {
-            border-color: #c0c4c8;
-            background: #f0f2f5;
+            border-color: #6366f1; transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-
-        .image-preview.has-image {
-            border: none;
-            background: #000;
-            padding: 0;
-        }
-
+        .image-preview.has-image { border: none; padding: 0; }
         .image-preview img {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            max-width: 100%;
-            display: none;
+            max-width: 100%; max-height: 100%; width: auto; height: auto;
+            object-fit: contain; display: block; margin: auto;
         }
-
-        .image-preview .preview-image,
-        .image-preview .result-image {
-            max-width: 100%;
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-        }
-
         .add-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #ffffff;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-            position: relative;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
-
-        .add-icon::before,
-        .add-icon::after {
-            content: '';
-            position: absolute;
-            background: #9ca3af;
-            border-radius: 2px;
+        .add-icon svg { width: 24px; height: 24px; color: white; }
+        .preview-text { font-size: 12px; color: #888; font-weight: 500; }
+        .prompt-section { margin-bottom: 12px; }
+        .prompt-section textarea {
+            width: 100%; height: 60px; padding: 10px 14px;
+            border: 1px solid #e0e0e0; border-radius: 10px;
+            font-size: 13px; resize: none; background: white;
+            transition: all 0.2s ease; font-family: inherit;
         }
-
-        .add-icon::before {
-            width: 24px;
-            height: 3px;
+        .prompt-section textarea:focus {
+            outline: none; border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
-
-        .add-icon::after {
-            width: 3px;
-            height: 24px;
-        }
-
-        .preview-text {
-            color: #9ca3af;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .bottom-section {
-            padding: 20px 24px 32px;
-            flex-shrink: 0;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 16px;
-            letter-spacing: 0.5px;
-        }
-
-        .style-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .style-item {
-            aspect-ratio: 1;
-            background: #f3f4f6;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: 500;
-            text-align: center;
-            padding: 8px 4px;
-            position: relative;
-        }
-
-        .style-item:hover {
-            background: #e5e7eb;
-            transform: scale(1.02);
-        }
-
-        .style-item.selected {
-            background: #1f2937;
-            color: #ffffff;
-            box-shadow: 0 4px 12px rgba(31, 41, 55, 0.3);
-        }
-
-        .style-item .style-name {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 100%;
-        }
-
-        .style-item .delete-btn {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            width: 20px;
-            height: 20px;
-            background: #ef4444;
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: white;
-            line-height: 1;
-        }
-
-        .style-item:hover .delete-btn {
-            display: flex;
-        }
-
-        .style-item.add-style {
-            border: 2px dashed #d1d5db;
-            background: transparent;
-        }
-
-        .style-item.add-style:hover {
-            border-color: #9ca3af;
-            background: #f9fafb;
-        }
-
-        .add-style-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 4px;
-        }
-
-        .add-style-icon::before,
-        .add-style-icon::after {
-            content: '';
-            position: absolute;
-            background: #6b7280;
-            border-radius: 1px;
-        }
-
-        .add-style-icon::before {
-            width: 14px;
-            height: 2px;
-        }
-
-        .add-style-icon::after {
-            width: 2px;
-            height: 14px;
-        }
-
-        .import-btn {
-            grid-column: span 2;
-            aspect-ratio: auto;
-            height: 48px;
-            background: #f3f4f6;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            color: #6b7280;
-            font-weight: 500;
-            gap: 6px;
-            border: 2px dashed #d1d5db;
-        }
-
-        .import-btn:hover {
-            border-color: #9ca3af;
-            background: #f9fafb;
-        }
-
+        .prompt-section textarea::placeholder { color: #bbb; }
         .generate-btn {
-            width: 100%;
-            padding: 16px;
-            background: #1f2937;
-            color: #ffffff;
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+            margin-bottom: 12px;
         }
-
         .generate-btn:hover {
-            background: #374151;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(31, 41, 55, 0.3);
+            transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
         }
-
-        .generate-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .result-section {
-            margin-top: 8px;
-            flex-shrink: 0;
-        }
-
-        .result-section h2 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 8px;
-        }
-
+        .generate-btn:active { transform: translateY(0); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .result-section { flex-shrink: 0; margin-top: 12px; }
+        .result-section h2 { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
         .result-preview {
-            width: 100%;
-            background: white;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            overflow: hidden;
+            width: 100%; background: white; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); overflow: hidden;
             min-height: 120px;
         }
-
         .result-preview img {
-            max-width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            width: auto;
-            height: auto;
+            max-width: 100%; max-height: 400px;
+            object-fit: contain; width: auto; height: auto;
         }
-
-        .result-placeholder {
-            text-align: center;
-            color: #bbb;
-        }
-
-        .result-placeholder svg {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        .result-placeholder p {
-            font-size: 14px;
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            border-radius: 24px;
-            z-index: 10;
-        }
-
-        .loading-overlay.active {
-            display: flex;
-        }
-
+        .result-placeholder { text-align: center; color: #bbb; }
+        .result-placeholder svg { width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5; }
+        .result-placeholder p { font-size: 12px; }
+        .loading { display: none; text-align: center; padding: 20px 0; }
+        .loading.active { display: block; }
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f4f6;
-            border-top-color: #1f2937;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width: 36px; height: 36px; border: 3px solid #e0e0e0;
+            border-top-color: #6366f1; border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 12px;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading p { font-size: 13px; color: #888; }
+        .error-message {
+            display: none; background: #fef2f2; border: 1px solid #fecaca;
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
         }
-
-        .loading-text {
-            margin-top: 16px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 360px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #6b7280;
-            margin-bottom: 8px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .input-field:focus {
-            border-color: #1f2937;
-        }
-
-        .input-field::placeholder {
-            color: #9ca3af;
-        }
-
-        textarea.input-field {
-            min-height: 100px;
-            resize: none;
-            font-family: inherit;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .modal-btn.cancel {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .modal-btn.confirm {
-            background: #1f2937;
-            color: #ffffff;
-        }
-
-        .modal-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .download-btn {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            z-index: 5;
-        }
-
-        .download-btn.show {
-            display: flex;
-        }
-
-        .download-btn:hover {
-            background: #ffffff;
-            transform: scale(1.05);
-        }
-
-        .download-icon {
-            width: 18px;
-            height: 18px;
-            position: relative;
-        }
-
-        .download-icon::before {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 2px;
-            background: #6b7280;
-            top: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .download-icon::after {
-            content: '';
-            position: absolute;
-            width: 2px;
-            height: 8px;
-            background: #6b7280;
-            bottom: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .download-arrow {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid #6b7280;
-        }
-
-        .settings-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            z-index: 5;
-        }
-
-        .settings-btn:hover {
-            background: #ffffff;
-            transform: scale(1.05);
-        }
-
-        .reset-btn {
-            position: absolute;
-            top: 16px;
-            right: 66px;
-            height: 40px;
-            padding: 0 14px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            z-index: 5;
-            font-size: 13px;
-            color: #6b7280;
-            font-weight: 500;
-        }
-
-        .reset-btn:hover {
-            background: #ffffff;
-            transform: scale(1.05);
-            color: #ef4444;
-        }
-
-        .settings-icon {
-            width: 20px;
-            height: 20px;
-            position: relative;
-        }
-
-        .settings-icon::before {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #6b7280;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .settings-icon::after {
-            content: '';
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: #6b7280;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #fileInput {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        .error-message.active { display: block; }
+        .error-message p { font-size: 12px; color: #dc2626; }
+        .hidden { display: none !important; }
         .toast {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1f2937;
-            color: #ffffff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 200;
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%); background: #1f2937;
+            color: white; padding: 12px 24px; border-radius: 12px;
+            font-size: 14px; opacity: 0; transition: opacity 0.3s;
+            z-index: 9999; pointer-events: none;
         }
-
-        .toast.show {
-            opacity: 1;
-        }
-
-        .download-result-btn {
-            margin-top: 12px;
-            padding: 12px;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .download-result-btn:hover {
-            background: #e5e7eb;
-            color: #1f2937;
-        }
-
-        @media (max-height: 700px) {
-            body {
-                padding: 10px;
-            }
-            .phone-container {
-                border-radius: 24px;
-            }
-            .image-preview {
-                margin: 16px 16px 12px;
-            }
-            .bottom-section {
-                padding: 16px 16px 24px;
-            }
-        }
+        .toast.show { opacity: 1; }
     </style>
 </head>
 <body>
-    <div class="phone-container">
-        <div class="settings-btn" onclick="openSettings()">
-            <div class="settings-icon"></div>
-        </div>
-        <div class="reset-btn" onclick="resetAll()">重置</div>
+    <div class="container">
+        <header class="header">
+            <h1>AI 修图</h1>
+            <div class="version-tag">v2.2.0</div>
+        </header>
 
-        <div class="image-preview" id="imagePreview" onclick="handlePreviewClick(event)">
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="spinner"></div>
-                <div class="loading-text">生成中...</div>
+        <div class="api-config">
+            <input type="password" id="apiKey" placeholder="输入 API Key" value="sk-4efd601aaa884e03840e96277129801f">
+        </div>
+
+        <div class="image-preview" id="imagePreview" onclick="document.getElementById('fileInput').click()">
+            <div class="add-icon" id="addIcon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
             </div>
-            <div class="add-icon" id="addIcon"></div>
             <div class="preview-text" id="previewText">点击选择图片</div>
         </div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none" onchange="handleImageUpload(event)">
 
-        <div class="bottom-section">
-            <div class="section-title">风格</div>
-            <div class="style-grid" id="styleGrid">
-                <div class="style-item add-style" onclick="openAddStyle()">
-                    <div class="add-style-icon"></div>
-                    <span>添加</span>
-                </div>
-            </div>
-            <button class="generate-btn" id="generateBtn" onclick="generateImage()">生成</button>
-            <div class="result-section" id="resultSection">
-                <div class="section-title">结果</div>
-                <div class="result-preview" id="resultPreview">
-                    <div class="result-placeholder">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p>等待生成...</p>
-                    </div>
-                </div>
-                <button class="download-result-btn" id="downloadResultBtn" onclick="downloadResult()" style="display: none;">
-                    下载结果
-                </button>
-            </div>
+        <div class="prompt-section">
+            <textarea id="prompt" placeholder="请输入提示词，例如：转换为卡通风格"></textarea>
         </div>
 
-        <input type="file" id="fileInput" accept="image/*" onchange="handleImageSelect(event)" style="display: none;">
-        <input type="file" id="txtFileInput" accept=".txt" onchange="handleTxtImport(event)" style="display: none;">
-    </div>
+        <button class="generate-btn" id="generateBtn">生成</button>
 
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-title">API 设置</div>
-            <div class="input-group">
-                <label class="input-label">API Key</label>
-                <input type="password" class="input-field" id="apiKeyInput" placeholder="输入你的 API Key">
-            </div>
-            <div class="input-group">
-                <label class="input-label">Base URL</label>
-                <input type="text" class="input-field" id="baseUrlInput" placeholder="https://wellai.cc/openai/v1" value="https://wellai.cc/openai/v1">
-            </div>
-            <div class="input-group">
-                <label class="input-label">模型名称</label>
-                <input type="text" class="input-field" id="modelInput" placeholder="Nano-Banana-Pro2" value="Nano-Banana-Pro2">
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn cancel" onclick="closeSettings()">取消</button>
-                <button class="modal-btn confirm" onclick="saveSettings()">保存</button>
-            </div>
+        <div class="error-message" id="errorMessage"><p id="errorText"></p></div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>生成中...</p>
         </div>
-    </div>
 
-    <div class="modal" id="addStyleModal">
-        <div class="modal-content">
-            <div class="modal-title">添加风格</div>
-            <div class="input-group">
-                <label class="input-label">风格名称</label>
-                <input type="text" class="input-field" id="styleNameInput" placeholder="例如：动漫风格">
-            </div>
-            <div class="input-group">
-                <label class="input-label">提示词</label>
-                <textarea class="input-field" id="stylePromptInput" placeholder="描述你想要的风格效果..."></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn cancel" onclick="closeAddStyle()">取消</button>
-                <button class="modal-btn confirm" onclick="saveStyle()">添加</button>
+        <div class="result-section" id="resultSection">
+            <h2>结果</h2>
+            <div class="result-preview" id="resultPreview">
+                <div class="result-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p>等待生成...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -769,239 +173,65 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        console.log('Script loaded');
         let selectedImage = null;
-        let selectedStyleIndex = -1;
-        let styles = [
-            {
-                name: '电影感丁达尔',
-                prompt: '电影级写实摄影质感，真实世界物理光影，低饱和高级纪实色调，游戏CG风格 极具艺术感 震撼人心 背景压暗 暗部叠加 特写镜头高清  背景动态虚化 阳光灿烂 暖色丁达尔发丝光 光影交错 面部亮度合理 特写镜头 低饱和 光线逻辑符合真实世界 保证人物表情不变 姿势不变 构图角度不变 原比例'
-            }
-        ];
-        let apiSettings = {
-            apiKey: 'sk-4efd601aaa884e03840e96277129801f',
-            baseUrl: 'https://wellai.cc/openai/v1',
-            model: 'Nano-Banana-Pro2'
-        };
 
-        const defaultStyles = [
-            {
-                name: '电影感丁达尔',
-                prompt: '电影级写实摄影质感，真实世界物理光影，低饱和高级纪实色调，游戏CG风格 极具艺术感 震撼人心 背景压暗 暗部叠加 特写镜头高清  背景动态虚化 阳光灿烂 暖色丁达尔发丝光 光影交错 面部亮度合理 特写镜头 低饱和 光线逻辑符合真实世界 保证人物表情不变 姿势不变 构图角度不变 原比例'
-            }
-        ];
-
-        function resetAll() {
-            if (!confirm('确定要重置所有设置吗？')) return;
-            localStorage.removeItem('aiImageSettings');
-            localStorage.removeItem('aiImageStyles');
-            apiSettings = {
-                apiKey: 'sk-4efd601aaa884e03840e96277129801f',
-                baseUrl: 'https://wellai.cc/openai/v1',
-                model: 'Nano-Banana-Pro2'
-            };
-            styles = JSON.parse(JSON.stringify(defaultStyles));
-            loadData();
-            showToast('已重置');
-        }
-
-        function loadData() {
-            const savedSettings = localStorage.getItem('aiImageSettings');
-            const savedStyles = localStorage.getItem('aiImageStyles');
-            
-            if (savedSettings) {
-                apiSettings = JSON.parse(savedSettings);
-            }
-            
-            document.getElementById('apiKeyInput').value = apiSettings.apiKey;
-            document.getElementById('baseUrlInput').value = apiSettings.baseUrl;
-            document.getElementById('modelInput').value = apiSettings.model;
-            
-            if (savedStyles) {
-                styles = JSON.parse(savedStyles);
-            }
-            
-            renderStyles();
-        }
-
-        function saveData() {
-            localStorage.setItem('aiImageSettings', JSON.stringify(apiSettings));
-            localStorage.setItem('aiImageStyles', JSON.stringify(styles));
-        }
-
-        function openSettings() {
-            document.getElementById('settingsModal').classList.add('active');
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.remove('active');
-        }
-
-        function saveSettings() {
-            apiSettings.apiKey = document.getElementById('apiKeyInput').value;
-            apiSettings.baseUrl = document.getElementById('baseUrlInput').value;
-            apiSettings.model = document.getElementById('modelInput').value;
-            saveData();
-            closeSettings();
-            showToast('设置已保存');
-        }
-
-        function openAddStyle() {
-            document.getElementById('styleNameInput').value = '';
-            document.getElementById('stylePromptInput').value = '';
-            document.getElementById('addStyleModal').classList.add('active');
-        }
-
-        function closeAddStyle() {
-            document.getElementById('addStyleModal').classList.remove('active');
-        }
-
-        function saveStyle() {
-            const name = document.getElementById('styleNameInput').value.trim();
-            const prompt = document.getElementById('stylePromptInput').value.trim();
-            
-            if (!name) {
-                showToast('请输入风格名称');
-                return;
-            }
-            
-            if (!prompt) {
-                showToast('请输入提示词');
-                return;
-            }
-            
-            styles.push({ name, prompt });
-            saveData();
-            renderStyles();
-            closeAddStyle();
-            showToast('风格已添加');
-        }
-
-        function deleteStyle(index, event) {
-            event.stopPropagation();
-            styles.splice(index, 1);
-            if (selectedStyleIndex === index) {
-                selectedStyleIndex = -1;
-            } else if (selectedStyleIndex > index) {
-                selectedStyleIndex--;
-            }
-            saveData();
-            renderStyles();
-        }
-
-        function renderStyles() {
-            const grid = document.getElementById('styleGrid');
-            grid.innerHTML = '';
-            
-            styles.forEach((style, index) => {
-                const item = document.createElement('div');
-                item.className = 'style-item' + (selectedStyleIndex === index ? ' selected' : '');
-                item.onclick = () => selectStyle(index);
-                item.innerHTML = `
-                    <div class="delete-btn" onclick="deleteStyle(${index}, event)">×</div>
-                    <span class="style-name">${style.name}</span>
-                `;
-                grid.appendChild(item);
-            });
-            
-            const addItem = document.createElement('div');
-            addItem.className = 'style-item add-style';
-            addItem.onclick = openAddStyle;
-            addItem.innerHTML = `
-                <div class="add-style-icon"></div>
-                <span>添加</span>
-            `;
-            grid.appendChild(addItem);
-
-            const importItem = document.createElement('div');
-            importItem.className = 'import-btn';
-            importItem.onclick = () => document.getElementById('txtFileInput').click();
-            importItem.innerHTML = `
-                <span>📄</span>
-                <span>导入TXT</span>
-            `;
-            grid.appendChild(importItem);
-        }
-
-        function handleTxtImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result.trim();
-                const name = file.name.replace(/\.txt$/i, '');
-                
-                if (!content) {
-                    showToast('文件内容为空');
-                    return;
-                }
-                
-                styles.push({ name, prompt: content });
-                saveData();
-                renderStyles();
-                showToast(`已导入风格：${name}`);
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        function selectStyle(index) {
-            selectedStyleIndex = selectedStyleIndex === index ? -1 : index;
-            renderStyles();
-        }
-
-        function handlePreviewClick(event) {
-            const fileInput = document.getElementById('fileInput');
-            fileInput.value = '';
-            setTimeout(() => {
-                fileInput.click();
-            }, 100);
-        }
-
-        function handleImageSelect(event) {
+        function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     selectedImage = e.target.result;
                     const preview = document.getElementById('imagePreview');
-                    preview.innerHTML = '<img src="' + selectedImage + '" alt="预览图片" style="width: 100%; height: auto; object-fit: contain; display: block;">';
+                    preview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = selectedImage;
+                    img.alt = '预览图片';
+                    preview.appendChild(img);
                     preview.classList.add('has-image');
-                    document.getElementById('resultSection').style.display = 'none';
+                    document.getElementById('addIcon').style.display = 'none';
+                    document.getElementById('previewText').style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        let currentResultUrl = null;
-
-        function downloadResult() {
-            if (!currentResultUrl) {
-                showToast('没有可下载的图片');
-                return;
-            }
-            const link = document.createElement('a');
-            link.href = currentResultUrl;
-            link.download = 'ai-image-' + Date.now() + '.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('开始下载');
-        }
-
         function showToast(message) {
+            console.log('Toast:', message);
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 2000);
+            }, 3000);
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.add('active');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('active');
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
         }
 
         async function generateImage() {
-            if (!apiSettings.apiKey) {
-                showToast('请先设置 API Key');
-                openSettings();
+            console.log('generateImage called');
+            hideError();
+
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const prompt = document.getElementById('prompt').value.trim();
+
+            if (!apiKey) {
+                showToast('请输入 API Key');
                 return;
             }
 
@@ -1010,72 +240,89 @@
                 return;
             }
 
-            if (selectedStyleIndex === -1) {
-                showToast('请选择风格');
+            if (!prompt) {
+                showToast('请输入提示词');
                 return;
             }
 
-            const loadingOverlay = document.getElementById('loadingOverlay');
+            showLoading();
             const generateBtn = document.getElementById('generateBtn');
-
-            loadingOverlay.classList.add('active');
             generateBtn.disabled = true;
 
             try {
-                const stylePrompt = styles[selectedStyleIndex].prompt;
-
                 const base64Data = selectedImage.split(',')[1];
 
                 const requestBody = {
-                    model: apiSettings.model,
-                    prompt: stylePrompt,
+                    model: 'Nano-Banana-Pro2',
+                    prompt: prompt,
                     response_format: 'b64_json',
                     advance: {
                         reference_images: {
                             normal_reference_images: [
-                                { image: 'data:image/jpeg;base64,' + base64Data }
+                                { image: selectedImage }
                             ]
                         }
                     }
                 };
 
-                const response = await fetch(`${apiSettings.baseUrl}/images/generations`, {
+                console.log('Sending request to:', 'https://wellai.cc/openai/v1/images/generations');
+
+                const response = await fetch('https://wellai.cc/openai/v1/images/generations', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiSettings.apiKey}`
+                        'Authorization': 'Bearer ' + apiKey
                     },
                     body: JSON.stringify(requestBody)
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
 
-                if (data.data && data.data[0]) {
-                    const imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
+                if (data.data && data.data[0] && data.data[0].b64_json) {
+                    const imageUrl = 'data:image/png;base64,' + data.data[0].b64_json;
                     const resultPreview = document.getElementById('resultPreview');
-                    resultPreview.innerHTML = '<img src="' + imageUrl + '" alt="Generated image">';
+                    resultPreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = '生成结果';
+                    resultPreview.appendChild(img);
                     document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('downloadResultBtn').style.display = 'block';
-                    currentResultUrl = imageUrl;
                     showToast('生成成功');
+                } else if (data.error) {
+                    showError(data.error.message || 'API 错误');
                 } else {
-                    showToast('生成失败，请重试');
-                    console.error('API Response:', data);
+                    showError('生成失败，请重试');
+                    console.error('Response:', data);
                 }
             } catch (error) {
-                showToast('请求失败：' + error.message);
+                showError('请求失败：' + error.message);
                 console.error('Error:', error);
             } finally {
-                loadingOverlay.classList.remove('active');
+                hideLoading();
                 generateBtn.disabled = false;
             }
         }
 
-        loadData();
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, attaching event listener');
+            const btn = document.getElementById('generateBtn');
+            if (btn) {
+                btn.addEventListener('click', function(e) {
+                    console.log('Button clicked');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    generateImage();
+                });
+                console.log('Event listener attached to generate button');
+            } else {
+                console.error('Generate button not found');
+            }
+        });
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js');
-        }
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
     </script>
 </body>
 </html>
