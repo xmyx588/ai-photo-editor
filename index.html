@@ -480,12 +480,10 @@
                         img.alt = '预览图片';
                         img.onload = function() {
                             var ratio = img.naturalWidth / img.naturalHeight;
-                            if (ratio > 1.2) {
-                                imageSize = '16:9';
-                            } else if (ratio < 0.8) {
-                                imageSize = '9:16';
+                            if (ratio >= 1) {
+                                imageSize = '1792x1024';
                             } else {
-                                imageSize = '1:1';
+                                imageSize = '1024x1792';
                             }
                         };
                         preview.appendChild(img);
