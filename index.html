@@ -420,8 +420,10 @@
         }
 
         async function generateImage() {
+            console.log('generateImage called');
             hideError();
             var apiKey = localStorage.getItem('apiKey') || '';
+            console.log('apiKey:', apiKey ? 'exists' : 'empty');
             if (!apiKey) {
                 showToast('请先在设置中配置 API Key');
                 document.getElementById('settingsModal').classList.add('active');
@@ -439,6 +441,7 @@
             document.getElementById('loadingOverlay').classList.add('active');
             document.getElementById('generateBtn').disabled = true;
             try {
+                console.log('Sending request...');
                 var response = await fetch('https://wellai.cc/openai/v1/images/generations', {
                     method: 'POST',
                     headers: {
@@ -458,7 +461,9 @@
                         }
                     })
                 });
+                console.log('Response status:', response.status);
                 var data = await response.json();
+                console.log('Response data:', data);
                 if (data.data && data.data[0] && data.data[0].b64_json) {
                     generatedImageUrl = 'data:image/png;base64,' + data.data[0].b64_json;
                     preview.innerHTML = '';
@@ -475,10 +480,11 @@
                     showError(data.error.message || 'API 错误');
                     document.getElementById('loadingOverlay').classList.remove('active');
                 } else {
-                    showError('生成失败，请重试');
+                    showError('生成失败，请重试。返回数据：' + JSON.stringify(data).substring(0, 200));
                     document.getElementById('loadingOverlay').classList.remove('active');
                 }
             } catch (error) {
+                console.error('Error:', error);
                 showError('请求失败：' + error.message);
                 document.getElementById('loadingOverlay').classList.remove('active');
             } finally {
