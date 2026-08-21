@@ -55,7 +55,7 @@
         .preview-text { font-size: 12px; color: #888; font-weight: 500; }
         .image-actions {
             position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-            display: none; gap: 10px; z-index: 10;
+            display: none; gap: 10px; z-index: 20;
         }
         .image-actions.show { display: flex; }
         .action-btn {
@@ -468,6 +468,7 @@
                     preview.appendChild(img);
                     preview.appendChild(document.getElementById('loadingOverlay'));
                     preview.appendChild(document.getElementById('imageActions'));
+                    document.getElementById('loadingOverlay').classList.remove('active');
                     document.getElementById('imageActions').classList.add('show');
                     showToast('生成成功');
                 } else if (data.error) {
