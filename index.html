@@ -695,9 +695,9 @@
             }
         ];
         let apiSettings = {
-            apiKey: 'sk-1c92ab0cedca4686bf7f2475df8975cb',
-            baseUrl: 'https://ph8.co/openai/v1',
-            model: 'doubao-seedream-4-5-251128'
+            apiKey: 'sk-4efd601aaa884e03840e96277129801f',
+            baseUrl: 'https://wellai.cc/openai/v1',
+            model: 'Nano-Banana-Pro2'
         };
 
         const defaultStyles = [
@@ -712,9 +712,9 @@
             localStorage.removeItem('aiImageSettings');
             localStorage.removeItem('aiImageStyles');
             apiSettings = {
-                apiKey: 'sk-1c92ab0cedca4686bf7f2475df8975cb',
-                baseUrl: 'https://ph8.co/openai/v1',
-                model: 'doubao-seedream-4-5-251128'
+                apiKey: 'sk-4efd601aaa884e03840e96277129801f',
+                baseUrl: 'https://wellai.cc/openai/v1',
+                model: 'Nano-Banana-Pro2'
             };
             styles = JSON.parse(JSON.stringify(defaultStyles));
             loadData();
@@ -950,18 +950,18 @@
             try {
                 const stylePrompt = styles[selectedStyleIndex].prompt;
 
+                const base64Data = selectedImage.split(',')[1];
+
                 const requestBody = {
                     model: apiSettings.model,
                     prompt: stylePrompt,
-                    size: "2K",
-                    response_format: "url",
-                    extra_body: {
-                        image: [selectedImage],
-                        sequential_image_generation: "auto",
-                        sequential_image_generation_options: {
-                            max_images: 1
-                        },
-                        watermark: false
+                    response_format: 'b64_json',
+                    advance: {
+                        reference_images: {
+                            normal_reference_images: [
+                                { image: 'data:image/jpeg;base64,' + base64Data }
+                            ]
+                        }
                     }
                 };
 
@@ -978,7 +978,7 @@
 
                 if (data.data && data.data[0]) {
                     const resultImage = document.getElementById('resultImage');
-                    const imageUrl = data.data[0].url || `data:image/png;base64,${data.data[0].b64_json}`;
+                    const imageUrl = `data:image/png;base64,${data.data[0].b64_json}`;
                     resultImage.src = imageUrl;
                     resultImage.style.display = 'block';
                     document.getElementById('previewImage').style.display = 'none';
