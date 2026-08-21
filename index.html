@@ -275,6 +275,7 @@
         var selectedImage = null;
         var generatedImageUrl = null;
         var selectedStylePrompt = '';
+        var imageSize = '1:1';
 
         var DEFAULT_STYLES = [
             { icon: '🎨', name: '卡通', prompt: '转为卡通动漫风格，色彩鲜艳' },
@@ -416,6 +417,7 @@
                     body: JSON.stringify({
                         model: 'Nano-Banana-Pro2',
                         prompt: selectedStylePrompt,
+                        size: imageSize,
                         response_format: 'b64_json',
                         advance: {
                             reference_images: {
@@ -476,6 +478,16 @@
                         var img = document.createElement('img');
                         img.src = selectedImage;
                         img.alt = '预览图片';
+                        img.onload = function() {
+                            var ratio = img.naturalWidth / img.naturalHeight;
+                            if (ratio > 1.2) {
+                                imageSize = '16:9';
+                            } else if (ratio < 0.8) {
+                                imageSize = '9:16';
+                            } else {
+                                imageSize = '1:1';
+                            }
+                        };
                         preview.appendChild(img);
                         preview.classList.add('has-image');
                         document.getElementById('actionsOverlay').classList.remove('active');
