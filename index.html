@@ -408,24 +408,18 @@
             document.getElementById('actionsOverlay').classList.remove('active');
             document.getElementById('generateBtn').disabled = true;
             try {
-                var response = await fetch('https://wellai.cc/openai/v1/images/generations', {
+                var response = await fetch('https://ph8.co/openai/v1/images/generations', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + apiKey
                     },
                     body: JSON.stringify({
-                        model: 'Nano-Banana-Pro2',
+                        model: 'doubao-seedream-4-5-251128',
                         prompt: selectedStylePrompt,
                         size: imageSize,
                         response_format: 'b64_json',
-                        advance: {
-                            reference_images: {
-                                normal_reference_images: [
-                                    { image: selectedImage }
-                                ]
-                            }
-                        }
+                        image: [selectedImage]
                     })
                 });
                 var data = await response.json();
