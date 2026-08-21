@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="AI修图">
@@ -32,15 +33,19 @@
         }
         .settings-btn:hover { border-color: #6366f1; box-shadow: 0 2px 12px rgba(99,102,241,0.15); }
         .settings-btn svg { width: 18px; height: 18px; color: #666; }
+        .preview-wrapper {
+            flex: 1; min-height: 0; position: relative;
+            margin-bottom: 12px;
+        }
         .image-preview {
-            flex: 1; min-height: 0; background: white; border-radius: 16px;
+            width: 100%; height: 100%; background: white; border-radius: 16px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            margin-bottom: 12px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             cursor: pointer; transition: all 0.3s ease; border: 2px dashed #e0e0e0;
             overflow: hidden; position: relative;
         }
         .image-preview:hover { border-color: #6366f1; }
-        .image-preview.has-image { border: none; padding: 0; cursor: default; }
+        .image-preview.has-image { border: none; cursor: default; }
         .image-preview img {
             max-width: 100%; max-height: 100%; width: auto; height: auto;
             object-fit: contain; display: block; margin: auto;
@@ -53,31 +58,18 @@
         }
         .add-icon svg { width: 24px; height: 24px; color: white; }
         .preview-text { font-size: 12px; color: #888; font-weight: 500; }
-        .image-actions {
-            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-            display: none; gap: 10px; z-index: 20;
-        }
-        .image-actions.show { display: flex; }
-        .action-btn {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: rgba(255,255,255,0.95); border: 1px solid #e0e0e0;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .action-btn:hover { border-color: #6366f1; transform: scale(1.1); }
-        .action-btn svg { width: 18px; height: 18px; color: #555; }
-        .action-btn.reset { background: rgba(239,68,68,0.9); border-color: #ef4444; }
-        .action-btn.reset svg { color: white; }
-        .action-btn.download { background: rgba(99,102,241,0.9); border-color: #6366f1; }
-        .action-btn.download svg { color: white; }
-        .loading-overlay {
+        .overlay {
             display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.85); z-index: 5;
+            border-radius: 16px; z-index: 10;
             flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 16px;
         }
-        .loading-overlay.active { display: flex; }
+        .overlay.active { display: flex; }
+        .loading-overlay { background: rgba(255,255,255,0.85); }
+        .actions-overlay {
+            background: transparent;
+            align-items: center; justify-content: flex-end;
+            padding-bottom: 16px; flex-direction: row; gap: 10px;
+        }
         .spinner {
             width: 36px; height: 36px; border: 3px solid #e0e0e0;
             border-top-color: #6366f1; border-radius: 50%;
@@ -85,6 +77,18 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-overlay p { font-size: 13px; color: #888; }
+        .action-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: none;
+        }
+        .action-btn:active { transform: scale(0.9); }
+        .action-btn.reset { background: #ef4444; }
+        .action-btn.reset svg { color: white; width: 18px; height: 18px; }
+        .action-btn.download { background: #6366f1; }
+        .action-btn.download svg { color: white; width: 18px; height: 18px; }
         .style-section { margin-bottom: 12px; }
         .style-section label { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; display: block; }
         .style-grid {
@@ -192,7 +196,7 @@
     <div class="container">
         <header class="header">
             <h1>AI 修图</h1>
-            <div class="version-tag">v2.5.1</div>
+            <div class="version-tag">v2.6.0</div>
             <div class="settings-btn" id="settingsBtn" title="设置">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -201,18 +205,20 @@
             </div>
         </header>
 
-        <div class="image-preview" id="imagePreview" onclick="handlePreviewClick()">
-            <div class="add-icon" id="addIcon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
+        <div class="preview-wrapper">
+            <div class="image-preview" id="imagePreview">
+                <div class="add-icon" id="addIcon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                </div>
+                <div class="preview-text" id="previewText">点击选择图片</div>
             </div>
-            <div class="preview-text" id="previewText">点击选择图片</div>
-            <div class="loading-overlay" id="loadingOverlay">
+            <div class="overlay loading-overlay" id="loadingOverlay">
                 <div class="spinner"></div>
                 <p>生成中...</p>
             </div>
-            <div class="image-actions" id="imageActions">
+            <div class="overlay actions-overlay" id="actionsOverlay">
                 <button class="action-btn download" id="downloadBtn" title="下载">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -224,8 +230,8 @@
                     </svg>
                 </button>
             </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none">
         </div>
-        <input type="file" id="fileInput" accept="image/*" style="display: none" onchange="handleImageUpload(event)">
 
         <div class="style-section">
             <label>风格</label>
@@ -266,11 +272,11 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        let selectedImage = null;
-        let generatedImageUrl = null;
-        let selectedStylePrompt = '';
+        var selectedImage = null;
+        var generatedImageUrl = null;
+        var selectedStylePrompt = '';
 
-        const DEFAULT_STYLES = [
+        var DEFAULT_STYLES = [
             { icon: '🎨', name: '卡通', prompt: '转为卡通动漫风格，色彩鲜艳' },
             { icon: '🖌️', name: '水彩', prompt: '转为水彩画风格，笔触柔和，色彩通透' },
             { icon: '🖼️', name: '油画', prompt: '转为油画风格，笔触厚重，色彩丰富' },
@@ -319,9 +325,6 @@
                     var styles = getStyles();
                     styles.splice(idx, 1);
                     saveStyles(styles);
-                    if (selectedStylePrompt === styles[idx]?.prompt) {
-                        selectedStylePrompt = styles[0] ? styles[0].prompt : '';
-                    }
                     renderStyles();
                     showToast('已删除');
                 });
@@ -337,36 +340,6 @@
             grid.appendChild(addItem);
             if (!selectedStylePrompt && styles.length > 0) {
                 selectedStylePrompt = styles[0].prompt;
-            }
-        }
-
-        function handlePreviewClick() {
-            if (generatedImageUrl) return;
-            if (!selectedImage) {
-                document.getElementById('fileInput').click();
-            }
-        }
-
-        function handleImageUpload(event) {
-            var file = event.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedImage = e.target.result;
-                    generatedImageUrl = null;
-                    var preview = document.getElementById('imagePreview');
-                    preview.innerHTML = '';
-                    var img = document.createElement('img');
-                    img.src = selectedImage;
-                    img.alt = '预览图片';
-                    preview.appendChild(img);
-                    preview.classList.add('has-image');
-                    document.getElementById('loadingOverlay').classList.remove('active');
-                    document.getElementById('imageActions').classList.remove('show');
-                    preview.appendChild(document.getElementById('loadingOverlay'));
-                    preview.appendChild(document.getElementById('imageActions'));
-                };
-                reader.readAsDataURL(file);
             }
         }
 
@@ -386,6 +359,23 @@
             document.getElementById('errorMessage').classList.remove('active');
         }
 
+        function resetPreview() {
+            selectedImage = null;
+            generatedImageUrl = null;
+            var preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            preview.classList.remove('has-image');
+            var addIcon = document.createElement('div');
+            addIcon.className = 'add-icon';
+            addIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>';
+            var text = document.createElement('div');
+            text.className = 'preview-text';
+            text.textContent = '点击选择图片';
+            preview.appendChild(addIcon);
+            preview.appendChild(text);
+            document.getElementById('actionsOverlay').classList.remove('active');
+        }
+
         function downloadImage() {
             if (!generatedImageUrl) return;
             var a = document.createElement('a');
@@ -397,33 +387,9 @@
             showToast('已下载');
         }
 
-        function resetPreview() {
-            selectedImage = null;
-            generatedImageUrl = null;
-            var preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
-            preview.classList.remove('has-image');
-            var addIcon = document.createElement('div');
-            addIcon.className = 'add-icon';
-            addIcon.id = 'addIcon';
-            addIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>';
-            var text = document.createElement('div');
-            text.className = 'preview-text';
-            text.id = 'previewText';
-            text.textContent = '点击选择图片';
-            preview.appendChild(addIcon);
-            preview.appendChild(text);
-            preview.appendChild(document.getElementById('loadingOverlay'));
-            preview.appendChild(document.getElementById('imageActions'));
-            document.getElementById('imageActions').classList.remove('show');
-            document.getElementById('loadingOverlay').classList.remove('active');
-        }
-
         async function generateImage() {
-            console.log('generateImage called');
             hideError();
             var apiKey = localStorage.getItem('apiKey') || '';
-            console.log('apiKey:', apiKey ? 'exists' : 'empty');
             if (!apiKey) {
                 showToast('请先在设置中配置 API Key');
                 document.getElementById('settingsModal').classList.add('active');
@@ -437,11 +403,10 @@
                 showToast('请选择风格');
                 return;
             }
-            var preview = document.getElementById('imagePreview');
             document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('actionsOverlay').classList.remove('active');
             document.getElementById('generateBtn').disabled = true;
             try {
-                console.log('Sending request...');
                 var response = await fetch('https://wellai.cc/openai/v1/images/generations', {
                     method: 'POST',
                     headers: {
@@ -461,32 +426,27 @@
                         }
                     })
                 });
-                console.log('Response status:', response.status);
                 var data = await response.json();
-                console.log('Response data:', data);
+                document.getElementById('loadingOverlay').classList.remove('active');
                 if (data.data && data.data[0] && data.data[0].b64_json) {
                     generatedImageUrl = 'data:image/png;base64,' + data.data[0].b64_json;
+                    var preview = document.getElementById('imagePreview');
                     preview.innerHTML = '';
                     var img = document.createElement('img');
                     img.src = generatedImageUrl;
                     img.alt = '生成结果';
                     preview.appendChild(img);
-                    preview.appendChild(document.getElementById('loadingOverlay'));
-                    preview.appendChild(document.getElementById('imageActions'));
-                    document.getElementById('loadingOverlay').classList.remove('active');
-                    document.getElementById('imageActions').classList.add('show');
+                    preview.classList.add('has-image');
+                    document.getElementById('actionsOverlay').classList.add('active');
                     showToast('生成成功');
                 } else if (data.error) {
                     showError(data.error.message || 'API 错误');
-                    document.getElementById('loadingOverlay').classList.remove('active');
                 } else {
-                    showError('生成失败，请重试。返回数据：' + JSON.stringify(data).substring(0, 200));
-                    document.getElementById('loadingOverlay').classList.remove('active');
+                    showError('生成失败，请重试');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showError('请求失败：' + error.message);
                 document.getElementById('loadingOverlay').classList.remove('active');
+                showError('请求失败：' + error.message);
             } finally {
                 document.getElementById('generateBtn').disabled = false;
             }
@@ -497,6 +457,32 @@
             if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
 
             renderStyles();
+
+            document.getElementById('imagePreview').addEventListener('click', function() {
+                if (!selectedImage) {
+                    document.getElementById('fileInput').click();
+                }
+            });
+
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        selectedImage = ev.target.result;
+                        generatedImageUrl = null;
+                        var preview = document.getElementById('imagePreview');
+                        preview.innerHTML = '';
+                        var img = document.createElement('img');
+                        img.src = selectedImage;
+                        img.alt = '预览图片';
+                        preview.appendChild(img);
+                        preview.classList.add('has-image');
+                        document.getElementById('actionsOverlay').classList.remove('active');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
 
             document.getElementById('generateBtn').addEventListener('click', function(e) {
                 e.preventDefault();
