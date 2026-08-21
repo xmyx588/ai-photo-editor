@@ -39,11 +39,8 @@
             cursor: pointer; transition: all 0.3s ease; border: 2px dashed #e0e0e0;
             overflow: hidden; position: relative;
         }
-        .image-preview:hover {
-            border-color: #6366f1; transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        .image-preview.has-image { border: none; padding: 0; }
+        .image-preview:hover { border-color: #6366f1; }
+        .image-preview.has-image { border: none; padding: 0; cursor: default; }
         .image-preview img {
             max-width: 100%; max-height: 100%; width: auto; height: auto;
             object-fit: contain; display: block; margin: auto;
@@ -56,6 +53,38 @@
         }
         .add-icon svg { width: 24px; height: 24px; color: white; }
         .preview-text { font-size: 12px; color: #888; font-weight: 500; }
+        .image-actions {
+            position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+            display: none; gap: 10px; z-index: 10;
+        }
+        .image-actions.show { display: flex; }
+        .action-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.95); border: 1px solid #e0e0e0;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .action-btn:hover { border-color: #6366f1; transform: scale(1.1); }
+        .action-btn svg { width: 18px; height: 18px; color: #555; }
+        .action-btn.reset { background: rgba(239,68,68,0.9); border-color: #ef4444; }
+        .action-btn.reset svg { color: white; }
+        .action-btn.download { background: rgba(99,102,241,0.9); border-color: #6366f1; }
+        .action-btn.download svg { color: white; }
+        .loading-overlay {
+            display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.85); z-index: 5;
+            flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 16px;
+        }
+        .loading-overlay.active { display: flex; }
+        .spinner {
+            width: 36px; height: 36px; border: 3px solid #e0e0e0;
+            border-top-color: #6366f1; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay p { font-size: 13px; color: #888; }
         .style-section { margin-bottom: 12px; }
         .style-section label { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; display: block; }
         .style-grid {
@@ -98,35 +127,9 @@
             transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
             margin-bottom: 12px;
         }
-        .generate-btn:hover {
-            transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
-        }
+        .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4); }
         .generate-btn:active { transform: translateY(0); }
         .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .result-section { flex-shrink: 0; margin-top: 12px; }
-        .result-section h2 { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
-        .result-preview {
-            width: 100%; background: white; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); overflow: hidden;
-            min-height: 120px;
-        }
-        .result-preview img {
-            max-width: 100%; max-height: 400px;
-            object-fit: contain; width: auto; height: auto;
-        }
-        .result-placeholder { text-align: center; color: #bbb; }
-        .result-placeholder svg { width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5; }
-        .result-placeholder p { font-size: 12px; }
-        .loading { display: none; text-align: center; padding: 20px 0; }
-        .loading.active { display: block; }
-        .spinner {
-            width: 36px; height: 36px; border: 3px solid #e0e0e0;
-            border-top-color: #6366f1; border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto 12px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading p { font-size: 13px; color: #888; }
         .error-message {
             display: none; background: #fef2f2; border: 1px solid #fecaca;
             border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
@@ -189,7 +192,7 @@
     <div class="container">
         <header class="header">
             <h1>AI 修图</h1>
-            <div class="version-tag">v2.4.0</div>
+            <div class="version-tag">v2.5.0</div>
             <div class="settings-btn" id="settingsBtn" title="设置">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -198,13 +201,29 @@
             </div>
         </header>
 
-        <div class="image-preview" id="imagePreview" onclick="document.getElementById('fileInput').click()">
+        <div class="image-preview" id="imagePreview" onclick="handlePreviewClick()">
             <div class="add-icon" id="addIcon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
             </div>
             <div class="preview-text" id="previewText">点击选择图片</div>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p>生成中...</p>
+            </div>
+            <div class="image-actions" id="imageActions">
+                <button class="action-btn download" id="downloadBtn" title="下载">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+                <button class="action-btn reset" id="resetBtn" title="重置">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none" onchange="handleImageUpload(event)">
 
@@ -216,23 +235,6 @@
         <button class="generate-btn" id="generateBtn">生成</button>
 
         <div class="error-message" id="errorMessage"><p id="errorText"></p></div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>生成中...</p>
-        </div>
-
-        <div class="result-section" id="resultSection">
-            <h2>结果</h2>
-            <div class="result-preview" id="resultPreview">
-                <div class="result-placeholder">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p>等待生成...</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="modal-overlay" id="settingsModal">
@@ -265,6 +267,7 @@
 
     <script>
         let selectedImage = null;
+        let generatedImageUrl = null;
         let selectedStylePrompt = '';
 
         const DEFAULT_STYLES = [
@@ -280,7 +283,7 @@
         ];
 
         function getStyles() {
-            const saved = localStorage.getItem('styles');
+            var saved = localStorage.getItem('styles');
             if (saved) return JSON.parse(saved);
             localStorage.setItem('styles', JSON.stringify(DEFAULT_STYLES));
             return DEFAULT_STYLES;
@@ -291,11 +294,11 @@
         }
 
         function renderStyles() {
-            const grid = document.getElementById('styleGrid');
-            const styles = getStyles();
+            var grid = document.getElementById('styleGrid');
+            var styles = getStyles();
             grid.innerHTML = '';
             styles.forEach(function(s, i) {
-                const item = document.createElement('div');
+                var item = document.createElement('div');
                 item.className = 'style-item' + (s.prompt === selectedStylePrompt ? ' selected' : '');
                 item.innerHTML =
                     '<span class="style-icon">' + s.icon + '</span>' +
@@ -316,7 +319,7 @@
                     var styles = getStyles();
                     styles.splice(idx, 1);
                     saveStyles(styles);
-                    if (selectedStylePrompt === getStyles()[idx]?.prompt) {
+                    if (selectedStylePrompt === styles[idx]?.prompt) {
                         selectedStylePrompt = styles[0] ? styles[0].prompt : '';
                     }
                     renderStyles();
@@ -337,12 +340,20 @@
             }
         }
 
+        function handlePreviewClick() {
+            if (generatedImageUrl) return;
+            if (!selectedImage) {
+                document.getElementById('fileInput').click();
+            }
+        }
+
         function handleImageUpload(event) {
             var file = event.target.files[0];
             if (file) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     selectedImage = e.target.result;
+                    generatedImageUrl = null;
                     var preview = document.getElementById('imagePreview');
                     preview.innerHTML = '';
                     var img = document.createElement('img');
@@ -350,6 +361,10 @@
                     img.alt = '预览图片';
                     preview.appendChild(img);
                     preview.classList.add('has-image');
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                    document.getElementById('imageActions').classList.remove('show');
+                    preview.appendChild(document.getElementById('loadingOverlay'));
+                    preview.appendChild(document.getElementById('imageActions'));
                 };
                 reader.readAsDataURL(file);
             }
@@ -371,12 +386,37 @@
             document.getElementById('errorMessage').classList.remove('active');
         }
 
-        function showLoading() {
-            document.getElementById('loading').classList.add('active');
+        function downloadImage() {
+            if (!generatedImageUrl) return;
+            var a = document.createElement('a');
+            a.href = generatedImageUrl;
+            a.download = 'ai-photo-' + Date.now() + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('已下载');
         }
 
-        function hideLoading() {
-            document.getElementById('loading').classList.remove('active');
+        function resetPreview() {
+            selectedImage = null;
+            generatedImageUrl = null;
+            var preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            preview.classList.remove('has-image');
+            var addIcon = document.createElement('div');
+            addIcon.className = 'add-icon';
+            addIcon.id = 'addIcon';
+            addIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>';
+            var text = document.createElement('div');
+            text.className = 'preview-text';
+            text.id = 'previewText';
+            text.textContent = '点击选择图片';
+            preview.appendChild(addIcon);
+            preview.appendChild(text);
+            preview.appendChild(document.getElementById('loadingOverlay'));
+            preview.appendChild(document.getElementById('imageActions'));
+            document.getElementById('imageActions').classList.remove('show');
+            document.getElementById('loadingOverlay').classList.remove('active');
         }
 
         async function generateImage() {
@@ -395,7 +435,8 @@
                 showToast('请选择风格');
                 return;
             }
-            showLoading();
+            var preview = document.getElementById('imagePreview');
+            document.getElementById('loadingOverlay').classList.add('active');
             document.getElementById('generateBtn').disabled = true;
             try {
                 var response = await fetch('https://wellai.cc/openai/v1/images/generations', {
@@ -419,24 +460,27 @@
                 });
                 var data = await response.json();
                 if (data.data && data.data[0] && data.data[0].b64_json) {
-                    var imageUrl = 'data:image/png;base64,' + data.data[0].b64_json;
-                    var resultPreview = document.getElementById('resultPreview');
-                    resultPreview.innerHTML = '';
+                    generatedImageUrl = 'data:image/png;base64,' + data.data[0].b64_json;
+                    preview.innerHTML = '';
                     var img = document.createElement('img');
-                    img.src = imageUrl;
+                    img.src = generatedImageUrl;
                     img.alt = '生成结果';
-                    resultPreview.appendChild(img);
-                    document.getElementById('resultSection').style.display = 'block';
+                    preview.appendChild(img);
+                    preview.appendChild(document.getElementById('loadingOverlay'));
+                    preview.appendChild(document.getElementById('imageActions'));
+                    document.getElementById('imageActions').classList.add('show');
                     showToast('生成成功');
                 } else if (data.error) {
                     showError(data.error.message || 'API 错误');
+                    document.getElementById('loadingOverlay').classList.remove('active');
                 } else {
                     showError('生成失败，请重试');
+                    document.getElementById('loadingOverlay').classList.remove('active');
                 }
             } catch (error) {
                 showError('请求失败：' + error.message);
+                document.getElementById('loadingOverlay').classList.remove('active');
             } finally {
-                hideLoading();
                 document.getElementById('generateBtn').disabled = false;
             }
         }
@@ -450,6 +494,16 @@
             document.getElementById('generateBtn').addEventListener('click', function(e) {
                 e.preventDefault();
                 generateImage();
+            });
+
+            document.getElementById('downloadBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                downloadImage();
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                resetPreview();
             });
 
             document.getElementById('settingsBtn').addEventListener('click', function() {
